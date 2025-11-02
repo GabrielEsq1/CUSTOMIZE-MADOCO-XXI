@@ -24,7 +24,7 @@
         
         .container {
             display: flex;
-            max-width: 1200px;
+            max-width: 1400px;
             width: 100%;
             background: white;
             border-radius: 15px;
@@ -35,7 +35,6 @@
         .editor-area {
             flex: 1;
             padding: 25px;
-            border-right: 1px solid #eee;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -47,6 +46,16 @@
             background: #f9f9f9;
             display: flex;
             flex-direction: column;
+            border-right: 1px solid #eaeaea;
+        }
+        
+        .properties-panel {
+            width: 320px;
+            padding: 25px;
+            background: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #eaeaea;
         }
         
         h1 {
@@ -97,10 +106,6 @@
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
         
-        .element:hover {
-            border-color: #3498db;
-        }
-        
         .resize-handle {
             position: absolute;
             width: 12px;
@@ -110,6 +115,12 @@
             border-radius: 50%;
             z-index: 10;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .element.selected .resize-handle {
+            opacity: 1;
         }
         
         .top-left { top: -6px; left: -6px; cursor: nw-resize; }
@@ -287,25 +298,6 @@
             font-size: 18px;
         }
         
-        .image-preview {
-            width: 100%;
-            height: 150px;
-            border: 2px dashed #bdc3c7;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #7f8c8d;
-            background: #f8f9fa;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .image-preview img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
         .logo {
             font-size: 28px;
             font-weight: bold;
@@ -333,10 +325,123 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        .property-control {
+            margin-bottom: 15px;
+        }
+        
+        .property-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .property-input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .dimension-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .dimension-control {
+            flex: 1;
+        }
+        
+        .text-controls {
+            margin-top: 10px;
+        }
+        
+        .no-selection {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .property-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .category-title {
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="controls-panel">
+            <div class="logo">MADOCO</div>
+            
+            <div class="section">
+                <div class="section-title">Color de Prenda</div>
+                
+                <div class="category-title">Agio</div>
+                <div class="color-options">
+                    <div class="color-option active" data-color="blue">
+                        <span class="color-circle color-blue"></span>Azul
+                    </div>
+                    <div class="color-option" data-color="green">
+                        <span class="color-circle color-green"></span>Verde
+                    </div>
+                </div>
+                
+                <div class="category-title">Agro</div>
+                <div class="color-options">
+                    <div class="color-option" data-color="yellow">
+                        <span class="color-circle color-yellow"></span>Amarillo
+                    </div>
+                    <div class="color-option" data-color="purple">
+                        <span class="color-circle color-purple"></span>Púrpura
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Talla</div>
+                <div class="size-options">
+                    <div class="size-option" data-size="S">S</div>
+                    <div class="size-option active" data-size="M">M</div>
+                    <div class="size-option" data-size="L">L</div>
+                    <div class="size-option" data-size="XL">XL</div>
+                    <div class="size-option" data-size="XXL">XXL</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Acciones Rápidas</div>
+                <button class="btn btn-danger" id="delete-selected">Eliminar Seleccionado</button>
+                <button class="btn btn-danger" id="clear-all">Limpiar Todo</button>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">CANTIDAD</div>
+                <div class="quantity-control">
+                    <button class="quantity-btn" id="decrease-qty">-</button>
+                    <div class="quantity-display" id="quantity">1</div>
+                    <button class="quantity-btn" id="increase-qty">+</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="editor-area">
             <h1>Editor Interactivo MADOCO</h1>
             <p class="subtitle">Todos los elementos son editables - arrastra para mover, esquinas para redimensionar</p>
@@ -362,64 +467,61 @@
             <div id="status-message" class="status-message" style="display: none;"></div>
         </div>
         
-        <div class="controls-panel">
-            <div class="logo">MADOCO</div>
+        <div class="properties-panel">
+            <div class="section-title">Propiedades del Elemento</div>
             
-            <div class="section">
-                <div class="section-title">Elegir Color de Prenda</div>
-                <div class="color-options">
-                    <div class="color-option active" data-color="red">
-                        <span class="color-circle color-red"></span>Rojo
-                    </div>
-                    <div class="color-option" data-color="blue">
-                        <span class="color-circle color-blue"></span>Azul
-                    </div>
-                    <div class="color-option" data-color="green">
-                        <span class="color-circle color-green"></span>Verde
-                    </div>
-                </div>
-                <div class="color-options">
-                    <div class="color-option" data-color="black">
-                        <span class="color-circle color-black"></span>Negro
-                    </div>
-                    <div class="color-option" data-color="yellow">
-                        <span class="color-circle color-yellow"></span>Amarillo
-                    </div>
-                    <div class="color-option" data-color="purple">
-                        <span class="color-circle color-purple"></span>Púrpura
-                    </div>
-                </div>
+            <div id="no-selection" class="no-selection">
+                Selecciona un elemento para editar sus propiedades
             </div>
             
-            <div class="section">
-                <div class="section-title">Elegir Talla</div>
-                <div class="size-options">
-                    <div class="size-option" data-size="XS">XS</div>
-                    <div class="size-option active" data-size="S">S</div>
-                    <div class="size-option" data-size="M">M</div>
-                    <div class="size-option" data-size="L">L</div>
-                    <div class="size-option" data-size="XL">XL</div>
-                    <div class="size-option" data-size="XXL">XXL</div>
+            <div id="element-properties" style="display: none;">
+                <div class="property-section">
+                    <div class="section-title" id="element-type">Texto</div>
+                    
+                    <div class="property-control" id="text-controls">
+                        <label class="property-label">Contenido del Texto</label>
+                        <textarea class="property-input" id="text-content" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="property-control">
+                        <label class="property-label">Color del Texto</label>
+                        <input type="color" class="property-input" id="text-color" value="#2c3e50">
+                    </div>
+                    
+                    <div class="property-control">
+                        <label class="property-label">Tamaño de Fuente</label>
+                        <input type="range" class="property-input" id="font-size" min="10" max="72" value="16">
+                        <span id="font-size-value">16px</span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">Acciones Rápidas</div>
-                <button class="btn btn-danger" id="delete-selected">Eliminar Seleccionado</button>
-                <button class="btn btn-danger" id="clear-all">Limpiar Todo</button>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">CANTIDAD</div>
-                <div class="quantity-control">
-                    <button class="quantity-btn" id="decrease-qty">-</button>
-                    <div class="quantity-display" id="quantity">1</div>
-                    <button class="quantity-btn" id="increase-qty">+</button>
+                
+                <div class="property-section">
+                    <div class="section-title">Posición y Tamaño</div>
+                    
+                    <div class="property-control">
+                        <label class="property-label">Posición X</label>
+                        <input type="number" class="property-input" id="pos-x" min="0">
+                    </div>
+                    
+                    <div class="property-control">
+                        <label class="property-label">Posición Y</label>
+                        <input type="number" class="property-input" id="pos-y" min="0">
+                    </div>
+                    
+                    <div class="dimension-controls">
+                        <div class="property-control dimension-control">
+                            <label class="property-label">Ancho</label>
+                            <input type="number" class="property-input" id="width" min="20">
+                        </div>
+                        
+                        <div class="property-control dimension-control">
+                            <label class="property-label">Alto</label>
+                            <input type="number" class="property-input" id="height" min="20">
+                        </div>
+                    </div>
+                    
+                    <button class="btn" id="apply-properties">Aplicar Cambios</button>
                 </div>
-            </div>
-            
-            <div style="margin-top: auto; text-align: center; color: #7f8c8d; font-size: 12px; padding-top: 20px;">
-                Editor Interactivo MADOCO &copy; 2023
             </div>
         </div>
     </div>
@@ -450,6 +552,21 @@
             const quantityDisplay = document.getElementById('quantity');
             const statusMessage = document.getElementById('status-message');
             
+            // Panel de propiedades
+            const noSelection = document.getElementById('no-selection');
+            const elementProperties = document.getElementById('element-properties');
+            const textContent = document.getElementById('text-content');
+            const textColor = document.getElementById('text-color');
+            const fontSize = document.getElementById('font-size');
+            const fontSizeValue = document.getElementById('font-size-value');
+            const posX = document.getElementById('pos-x');
+            const posY = document.getElementById('pos-y');
+            const widthInput = document.getElementById('width');
+            const heightInput = document.getElementById('height');
+            const applyPropertiesBtn = document.getElementById('apply-properties');
+            const elementType = document.getElementById('element-type');
+            const textControls = document.getElementById('text-controls');
+            
             // Arrays de imágenes de ejemplo
             const sampleImages = [
                 'https://via.placeholder.com/400x500/ecf0f1/2c3e50?text=MADOCO+1',
@@ -468,16 +585,88 @@
                 }, 3000);
             }
             
+            // Actualizar panel de propiedades
+            function updatePropertiesPanel() {
+                if (!selectedElement) {
+                    noSelection.style.display = 'block';
+                    elementProperties.style.display = 'none';
+                    return;
+                }
+                
+                noSelection.style.display = 'none';
+                elementProperties.style.display = 'block';
+                
+                // Determinar tipo de elemento
+                const isText = selectedElement.contentEditable === 'true';
+                elementType.textContent = isText ? 'Texto' : 'Imagen';
+                textControls.style.display = isText ? 'block' : 'none';
+                
+                // Actualizar valores
+                if (isText) {
+                    textContent.value = selectedElement.textContent;
+                    textColor.value = rgbToHex(selectedElement.style.color || '#2c3e50');
+                    
+                    const currentSize = parseInt(selectedElement.style.fontSize) || 16;
+                    fontSize.value = currentSize;
+                    fontSizeValue.textContent = currentSize + 'px';
+                }
+                
+                posX.value = parseInt(selectedElement.style.left) || 0;
+                posY.value = parseInt(selectedElement.style.top) || 0;
+                widthInput.value = parseInt(selectedElement.style.width) || 150;
+                heightInput.value = parseInt(selectedElement.style.height) || (isText ? 30 : 150);
+            }
+            
+            // Convertir RGB a HEX
+            function rgbToHex(rgb) {
+                if (rgb.startsWith('#')) return rgb;
+                
+                const result = rgb.match(/\d+/g);
+                if (!result) return '#2c3e50';
+                
+                return '#' + result.map(x => {
+                    const hex = parseInt(x).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            }
+            
+            // Aplicar propiedades desde el panel
+            function applyProperties() {
+                if (!selectedElement) return;
+                
+                // Aplicar posición
+                selectedElement.style.left = posX.value + 'px';
+                selectedElement.style.top = posY.value + 'px';
+                
+                // Aplicar dimensiones
+                selectedElement.style.width = widthInput.value + 'px';
+                selectedElement.style.height = heightInput.value + 'px';
+                
+                // Aplicar propiedades de texto si es un elemento de texto
+                if (selectedElement.contentEditable === 'true') {
+                    selectedElement.textContent = textContent.value;
+                    selectedElement.style.color = textColor.value;
+                    selectedElement.style.fontSize = fontSize.value + 'px';
+                    
+                    // QUITAR EL FONDO BLANCO - TEXTO TRANSPARENTE
+                    selectedElement.style.backgroundColor = 'transparent';
+                    selectedElement.style.padding = '0';
+                }
+                
+                showStatus('Propiedades aplicadas correctamente');
+            }
+            
             // Funciones para manejar elementos editables
             function createElement(type, content) {
                 const element = document.createElement('div');
                 element.className = 'element';
                 
                 if (type === 'text') {
-                    element.textContent = content || 'Texto nuevo';
-                    element.style.padding = '10px';
-                    element.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                    element.style.borderRadius = '5px';
+                    element.textContent = content || 'Texto personalizado';
+                    // TEXTO COMPLETAMENTE TRANSPARENTE - SIN FONDO
+                    element.style.padding = '0';
+                    element.style.backgroundColor = 'transparent';
+                    element.style.borderRadius = '0';
                     element.style.cursor = 'move';
                     element.style.fontWeight = 'bold';
                     element.style.color = '#2c3e50';
@@ -568,6 +757,9 @@
                         
                         element.style.left = newX + 'px';
                         element.style.top = newY + 'px';
+                        
+                        // Actualizar panel de propiedades
+                        updatePropertiesPanel();
                     }
                     
                     function stopDrag() {
@@ -637,6 +829,9 @@
                     element.style.height = newHeight + 'px';
                     element.style.left = newLeft + 'px';
                     element.style.top = newTop + 'px';
+                    
+                    // Actualizar panel de propiedades
+                    updatePropertiesPanel();
                 }
                 
                 function stopResize() {
@@ -658,6 +853,9 @@
                 // Seleccionar nuevo elemento
                 selectedElement = element;
                 element.classList.add('selected');
+                
+                // Actualizar panel de propiedades
+                updatePropertiesPanel();
             }
             
             // Funciones para cambiar imágenes
@@ -722,7 +920,7 @@
             });
             
             addTextBtn.addEventListener('click', function() {
-                createElement('text', 'Texto personalizado');
+                createElement('text', 'Gabriel Esq.');
             });
             
             deleteSelectedBtn.addEventListener('click', function() {
@@ -730,6 +928,7 @@
                     selectedElement.remove();
                     showStatus('Elemento eliminado correctamente');
                     selectedElement = null;
+                    updatePropertiesPanel();
                 } else {
                     showStatus('No hay ningún elemento seleccionado', true);
                 }
@@ -741,6 +940,7 @@
                         canvas.removeChild(canvas.firstChild);
                     }
                     selectedElement = null;
+                    updatePropertiesPanel();
                     showStatus('Todos los elementos han sido eliminados');
                 } else {
                     showStatus('No hay elementos para eliminar', true);
@@ -763,23 +963,31 @@
                 showStatus(`Cantidad aumentada a ${qty + 1}`);
             });
             
+            // Control de propiedades
+            fontSize.addEventListener('input', function() {
+                fontSizeValue.textContent = this.value + 'px';
+            });
+            
+            applyPropertiesBtn.addEventListener('click', applyProperties);
+            
             // Permitir hacer clic en el canvas para deseleccionar elementos
             canvas.addEventListener('mousedown', function(e) {
                 if (e.target === canvas) {
                     if (selectedElement) {
                         selectedElement.classList.remove('selected');
                         selectedElement = null;
+                        updatePropertiesPanel();
                     }
                 }
             });
             
             // Inicialización
             updateImageDisplay();
+            updatePropertiesPanel();
             
             // Agregar algunos elementos de ejemplo
-            createElement('text', 'MADOCO');
-            createElement('image', 'https://via.placeholder.com/150/3498db/ffffff?text=LOGO');
+            createElement('text', 'Gabriel Esq.');
         });
     </script>
 </body>
-</html>
+</html> 
